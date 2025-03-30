@@ -71,7 +71,7 @@ const AuthPage: NextPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <Head>
-        <title>{`Housy - ${true ? 'Sign Up' : 'Login'}`}</title>
+        <title>{`DFD - ${true ? 'Sign Up' : 'Login'}`}</title>
         <meta name="description" content="Find your perfect apartment with Housy" />
       </Head>
       

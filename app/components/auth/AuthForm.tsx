@@ -80,7 +80,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate }) => {
                   type="button"
                   className="flex-1 py-2 px-4 border border-gray-300 rounded-md flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors text-black"
                 >
-                  <span className="text-green-600">X</span>
+                  <span className="text-green-600">G</span>
                   <span>Login with Google</span>
                 </button>
               </div>
@@ -182,7 +182,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate }) => {
         </AnimatePresence>
       </div>
 
-      {/* Right side - Colorful gradient */}
       <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 p-8 relative overflow-hidden">
         <div className="absolute top-4 right-4">
           <button className="bg-black bg-opacity-20 text-white text-xs py-1 px-3 rounded-full">
