@@ -43,9 +43,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate }) => {
         <div className="mb-8">
           <div className="flex items-center">
             <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center mr-2">
-              <span className="text-white text-xs">H</span>
+              <span className="text-white text-xs">D</span>
             </div>
-            <span className="font-semibold text-black">Housy</span>
+            <span className="font-semibold text-black">Deadline To Die</span>
           </div>
         </div>
 
