@@ -1,0 +1,128 @@
+/* Định dạng chung cho Sidebar */
+.sidebar {
+  width: 5rem;
+  height: 100vh;
+  background-color: #fbcfe8; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  position: relative;
+  z-index: 1; 
+  transition: width 0.5s; 
+}
+.Sidebar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+/* Định dạng cho biểu tượng */
+.icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Định dạng cho tiêu đề */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+.text {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  opacity: 0; /* Thêm thuộc tính opacity để ẩn text khi không hover */
+  transition: opacity 0.5s; /* Thêm hiệu ứng chuyển đổi */
+}
+
+.title {
+  color: black;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  opacity: 0; /* Thêm thuộc tính opacity để ẩn title khi không hover */
+  transition: opacity 0.5s; /* Thêm hiệu ứng chuyển đổi */
+}
+.header .title{
+  opacity: 1;
+  color: black;
+}
+
+/* Định dạng cho menu */
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Định dạng cho menu-item */
+.menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem; 
+  flex-direction: row;
+  cursor: pointer;
+}
+
+/* Định dạng cho phần tử icon của menu-item */
+.menu-item .icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  display: flex;
+  justify-content: center;
+}
+/* Định dạng cho phần tử text của menu-item */
+.menu-item .text {
+  font-size: 1rem;
+  color: black;
+  opacity: 0; /* Thêm thuộc tính opacity để ẩn text của menu-item khi không hover */
+  transition: opacity 0.5s; /* Thêm hiệu ứng chuyển đổi */
+}
+/* Định dạng cho sidebar khi được kích hoạt */
+.sidebar-active {
+  background-color: #fbcfe8; 
+  width: 300px;
+  height: 100vh;
+  display: flex;
+  transform: translateX(0);
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  z-index: 2;
+  transition: width 0.5s;
+  
+}
+
+/* Định dạng cho phần tử text của menu-item khi hover */
+.sidebar-active .menu-item .text {
+  opacity: 1; /* Thêm thuộc tính opacity để hiển thị text của menu-item khi hover */
+}
+
+/* Định dạng cho text khi sidebar được kích hoạt */
+.sidebar-active .title,
+.sidebar-active .text {
+  opacity: 1; /* Thêm thuộc tính opacity để hiển thị title và text của Sidebar khi hover */
+}
+
+/* Định dạng cho text khi sidebar không được kích hoạt */
+.sidebar .text {
+  display: none;
+}
+.sidebar:hover ~ .FriendList {
+  margin-left: 5rem; /* Thêm thuộc tính margin-left để giữ chiều dài của FriendList */
+  height: 100vh; /* Thêm thuộc tính height để giữ chiều cao của FriendList */
+}
+/* Định dạng cho title khi sidebar được kích hoạt */
+.sidebar.active .title {
+  display: none;
+}

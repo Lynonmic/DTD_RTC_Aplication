@@ -32,7 +32,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Enter message"
-          className="flex-1 mx-3 py-2 px-4 bg-gray-200 rounded-full focus:outline-none"
+          className="flex-1 mx-3 py-2 px-4 bg-gray-200 rounded-full focus:outline-none text-black"
         />
         <button type="submit" className="p-2 bg-gray-800 rounded-full text-white">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

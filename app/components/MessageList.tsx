@@ -17,7 +17,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
                 {msg.sender.charAt(0)}
               </div>
             </div>
-            <div className="inline-block bg-gray-200 rounded-lg px-4 py-2 max-w-xs sm:max-w-md">
+            <div className="inline-block bg-gray-200 rounded-lg px-4 py-2 max-w-xs sm:max-w-md text-black">
               {msg.text}
             </div>
           </div>

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { FaFacebook, FaGoogle } from 'react-icons/fa';
 
 // Form types
 type FormType = 'signin' | 'signup';
@@ -9,9 +10,10 @@ type FormType = 'signin' | 'signup';
 // Props interface
 interface AuthFormProps {
   onAuthenticate: (email: string, password: string, isSignUp: boolean) => void;
+  onSocialAuth?: (provider: 'google' | 'facebook') => void;
 }
 
-const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate, onSocialAuth }) => {
   // Form state
   const [formType, setFormType] = useState<FormType>('signin');
   const [email, setEmail] = useState('');
@@ -71,16 +73,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthenticate }) => {
               <div className="flex gap-4 mb-4">
                 <button
                   type="button"
+                  onClick={() => onSocialAuth && onSocialAuth('facebook')}
                   className="flex-1 py-2 px-4 border border-gray-300 rounded-md flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors text-black"
                 >
-                  <span className="text-blue-600">f</span>
+                  <FaFacebook className="text-blue-600 text-lg" />
                   <span>Login with Facebook</span>
                 </button>
                 <button
                   type="button"
+                  onClick={() => onSocialAuth && onSocialAuth('google')}
                   className="flex-1 py-2 px-4 border border-gray-300 rounded-md flex items-center justify-center gap-2 text-sm hover:bg-gray-50 transition-colors text-black"
                 >
-                  <span className="text-green-600">G</span>
+                  <FaGoogle className="text-red-500 text-lg" />
                   <span>Login with Google</span>
                 </button>
               </div>

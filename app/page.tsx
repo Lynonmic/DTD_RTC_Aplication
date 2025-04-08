@@ -1,99 +1,55 @@
 'use client'
-/*import React, { useState } from 'react';
-import Head from 'next/head';
-import { GetServerSideProps } from 'next';
-import ChatHeader from './components/chatHeader';
-import MessageList from './components/MessageList';
-import MessageInput from './components/MessageInput';
-import UserSidebar from './components/UserSidebar';
-import { Message } from './type/index';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-interface ChatProps {
-  initialMessages: Message[];
-}
+export default function Home() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-export default function Chat({ initialMessages = [] }: ChatProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [showSidebar, setShowSidebar] = useState<boolean>(true);
-
-  const handleSendMessage = (newMessage: string): void => {
-    if (newMessage.trim()) {
-      setMessages([...messages, { 
-        id: Date.now(), 
-        text: newMessage, 
-        sender: 'Trường',
-        timestamp: new Date()
-      }]);
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('authToken');
+    
+    if (token) {
+      // If token exists, redirect to Chat page
+      router.push('/pages/Chat');
+    } else {
+      // If no token, redirect to Login page
+      router.push('/pages/Login');
     }
-  };
-
-  const toggleSidebar = (): void => {
-    setShowSidebar(!showSidebar);
-  };
+    
+    setLoading(false);
+  }, [router]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Head>
-        <title>Chat Application</title>
-        <meta name="description" content="Chat application interface" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      }
-      <div className="flex flex-col flex-1 border-r border-gray-300">
-        <ChatHeader 
-          username="Trường" 
-          avatarSrc="/avatar-placeholder.jpg" 
-          onInfoClick={toggleSidebar} 
-        />
-        <MessageList messages={messages} />
-        <MessageInput onSendMessage={handleSendMessage} />
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="text-center">
+        {loading ? (
+          <div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-700">Loading...</p>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-2xl font-bold mb-4">Redirecting...</h1>
+            <p>Please wait while we redirect you.</p>
+            <div className="flex space-x-4 mt-4 justify-center">
+              <button 
+                onClick={() => router.push('/pages/Chat')}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Go to Chat
+              </button>
+              <button 
+                onClick={() => router.push('/pages/Login')}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-
-     
-      {showSidebar && <UserSidebar />}
     </div>
   );
-}*/
-
-// pages/auth.tsx
-import { NextPage } from 'next';
-import Head from 'next/head';
-import AuthForm from './components/auth/AuthForm';
-
-const AuthPage: NextPage = () => {
-  // Handle authentication
-  const handleAuthenticate = (email: string, password: string, isSignUp: boolean) => {
-    console.log(`${isSignUp ? 'Sign up' : 'Sign in'} with:`, { email, password });
-    // Here you would typically call your authentication API
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <Head>
-        <title>{`DFD - ${true ? 'Sign Up' : 'Login'}`}</title>
-        <meta name="description" content="Find your perfect apartment with Housy" />
-      </Head>
-      
-      <AuthForm onAuthenticate={handleAuthenticate} />
-    </div>
-  );
-};
-
-export default AuthPage;
-
-/*export const getServerSideProps: GetServerSideProps = async () => {
-  // In a real app, you would fetch messages from a database or API
-  const initialMessages: Message[] = [
-    { id: 1, text: 'Single line message', sender: 'Trường', timestamp: new Date() },
-  ];
-
-  return {
-    props: {
-      initialMessages: initialMessages.map(msg => ({
-        ...msg,
-        timestamp: msg.timestamp ? msg.timestamp.toISOString() : null
-      })),
-    },
-  };
-};*/
+}
