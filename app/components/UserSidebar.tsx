@@ -1,5 +1,5 @@
 // components/UserSidebar.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SidebarProfile from './SidebarProfile';
 import SearchBar from './SearchBar';
@@ -8,6 +8,32 @@ import MenuOptions from './MenuOptions';
 const UserSidebar: React.FC = () => {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('menu');
+  const [userData, setUserData] = useState({
+    name: '',
+    avatarSrc: 'https://res.cloudinary.com/dhatjk5lm/image/upload/v1744169461/profile-placeholder.jpg',
+    uid: ''
+  });
+
+  // Fetch user data from localStorage on component mount
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const userInfo = localStorage.getItem('user_info');
+        if (userInfo) {
+          const parsedUserInfo = JSON.parse(userInfo);
+          setUserData({
+            name: parsedUserInfo.displayName || 'User',
+            avatarSrc: parsedUserInfo.photoURL || 'https://res.cloudinary.com/dhatjk5lm/image/upload/v1744169461/profile-placeholder.jpg',
+            uid: parsedUserInfo.uid
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    
+    getUserData();
+  }, []);
 
   const handleSearch = (query: string) => {
     console.log('Searching for:', query);
@@ -29,7 +55,7 @@ const UserSidebar: React.FC = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
       ),
-      onClick: () => router.push('/pages/Profile')
+      onClick: () => router.push('/Profile')
     },
     { 
       id: 'theme', 
@@ -66,7 +92,7 @@ const UserSidebar: React.FC = () => {
   return (
     <div className="h-full flex flex-col bg-gray-50 border-l border-gray-200 shadow-sm">
       {/* Profile section */}
-      <SidebarProfile name="Nhi Cute" avatarSrc="/profile-placeholder.jpg" />
+      <SidebarProfile name={userData.name} avatarSrc={userData.avatarSrc} />
       
       {/* Search bar */}
       <div className="px-2 pt-2">

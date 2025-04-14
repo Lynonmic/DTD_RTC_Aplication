@@ -2,7 +2,7 @@
 import React from 'react';
 
 interface Friend {
-  id?: number;
+  id?: string;
   avatar?: string;
   name?: string;
   time?: string;
@@ -10,11 +10,11 @@ interface Friend {
   unread?: number;
 }
 
-const FriendItem: React.FC<{ friend: Friend }> = ({ friend }) => {
+const FriendItem: React.FC<{ friend: Friend; isActive?: boolean; onClick?: () => void }> = ({ friend, isActive, onClick }) => {
   if (!friend) return null;
 
   return (
-    <div className="p-4 flex items-center text-black">
+    <div className={`p-4 flex items-center text-black ${isActive ? 'bg-gray-100' : ''}`} onClick={onClick}>
       <div className="relative">
         {friend.avatar ? (
           <img 

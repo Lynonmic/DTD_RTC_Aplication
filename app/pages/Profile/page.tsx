@@ -66,7 +66,34 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    fetchUserProfile();
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        // In a real app, this would be an API call to your backend
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Mock user data
+        const userData: UserProfile = {
+          uid: '3p4Hx4MlhPZ4EHdYaQ3tQ5mLANt2',
+          username: 'Trần Cường',
+          email: 'cuong.tran@example.com',
+          avatarSrc: '/profile-placeholder.jpg',
+          bio: 'Software developer passionate about creating amazing user experiences.',
+          joinDate: new Date('2024-01-15'),
+          status: 'Online',
+          phoneNumber: '+84 123 456 789'
+        };
+        
+        setUserProfile(userData);
+        setFormData(userData);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProfileData();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Peer from 'simple-peer';
+import { createVideoCallRoom, endVideoCallRoom } from '../services/videoCallService';
 
 interface VideoCallProps {
   chatId: string;
@@ -62,37 +63,50 @@ const VideoCall: React.FC<VideoCallProps> = ({
     };
   }, []);
 
-  const startCall = () => {
+  const startCall = async () => {
     if (!stream) return;
 
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream: stream
-    });
-
-    peer.on('signal', (data: any) => {
-      // Here you would send the signal data to the other peer
-      // For example, using a real-time database or WebSocket
-      console.log("Sending signal to peer:", peerId);
-      console.log("Signal data:", data);
+    try {
+      // Create a video call room in the backend
+      const callRoom = await createVideoCallRoom({
+        chatId: chatId,
+        senderId: userId
+      });
       
-      // In a real implementation, you would send this data to your backend
-      // which would then forward it to the other peer
-    });
+      console.log('Video call room created:', callRoom);
+      
+      const peer = new Peer({
+        initiator: true,
+        trickle: false,
+        stream: stream
+      });
 
-    peer.on('stream', (currentStream: MediaStream) => {
-      if (userVideo.current) {
-        userVideo.current.srcObject = currentStream;
-      }
-    });
+      peer.on('signal', (data: any) => {
+        // Here you would send the signal data to the other peer
+        // For example, using a real-time database or WebSocket
+        console.log("Sending signal to peer:", peerId);
+        console.log("Signal data:", data);
+        
+        // In a real implementation, you would send this data to your backend
+        // which would then forward it to the other peer
+      });
 
-    peer.on('error', (err: Error) => {
-      console.error("Peer connection error:", err);
-      setCallError(`Connection error: ${err.message}`);
-    });
+      peer.on('stream', (currentStream: MediaStream) => {
+        if (userVideo.current) {
+          userVideo.current.srcObject = currentStream;
+        }
+      });
 
-    connectionRef.current = peer;
+      peer.on('error', (err: Error) => {
+        console.error("Peer connection error:", err);
+        setCallError(`Connection error: ${err.message}`);
+      });
+
+      connectionRef.current = peer;
+    } catch (error) {
+      console.error('Failed to create video call room:', error);
+      setCallError('Failed to start call. Please try again.');
+    }
   };
 
   const answerCall = () => {
@@ -124,20 +138,30 @@ const VideoCall: React.FC<VideoCallProps> = ({
     connectionRef.current = peer;
   };
 
-  const endCall = () => {
+  const endCall = async () => {
     setCallEnded(true);
     
-    if (connectionRef.current) {
-      connectionRef.current.destroy();
-    }
-    
-    if (stream) {
-      stream.getTracks().forEach(track => {
-        track.stop();
+    try {
+      // Notify the backend that the call has ended
+      await endVideoCallRoom({
+        chatId: chatId,
+        messageId: '' // You might need to track the messageId from when the call was created
       });
+      
+      if (connectionRef.current) {
+        connectionRef.current.destroy();
+      }
+      
+      if (stream) {
+        stream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
+    } catch (error) {
+      console.error('Error ending call:', error);
+    } finally {
+      onClose();
     }
-    
-    onClose();
   };
 
   return (

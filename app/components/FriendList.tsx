@@ -2,71 +2,190 @@
 import React, { useState, useEffect } from 'react';
 import FriendItem from './FriendItem';
 import Image from 'next/image';
-// In a real app, we would import from the actual service
-// import { createPrivateChat } from '@/services/chatService';
+import { getAllUsers, createPrivateChat } from '../services/chatService';
+import api from '../services/apiService';
+import { User } from '../type';
 
 interface Friend {
-  id: number;
-  name: string;
-  message: string;
-  time: string;
-  avatar: string;
-  unread: number;
-}
-
-interface User {
   id: string;
   name: string;
+  message?: string;
+  time?: string;
   avatar: string;
+  unread?: number;
+  status?: string;
 }
 
 const FriendList = () => {
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [allUsers, setAllUsers] = useState<User[]>([
-    { id: 'user1', name: 'John Doe', avatar: '/avatar4.png' },
-    { id: 'user2', name: 'Jane Smith', avatar: '/avatar5.png' },
-    { id: 'user3', name: 'Mike Johnson', avatar: '/avatar6.png' },
-    { id: 'user4', name: 'Emily Davis', avatar: '/avatar7.png' },
-    { id: 'user5', name: 'Chris Wilson', avatar: '/avatar8.png' },
-  ]);
-  
-  const [friends, setFriends] = useState<Friend[]>([
-    {
-      id: 1,
-      name: 'Trần Cường',
-      message: 'Body 2 maecenas sed diam eget risus varius blandit sit amet non',
-      time: '12:30 PM',
-      avatar: '/avatar1.png',
-      unread: 9
-    },
-    {
-      id: 2,
-      name: 'Alex Johnson',
-      message: 'Hey, how are you doing today?',
-      time: '10:45 AM',
-      avatar: '/avatar2.png',
-      unread: 2
-    },
-    {
-      id: 3,
-      name: 'Sarah Williams',
-      message: 'Can we meet tomorrow to discuss the project?',
-      time: 'Yesterday',
-      avatar: '/avatar3.png',
-      unread: 0
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch all users when component mounts or when modal is opened
+  useEffect(() => {
+    if (showNewChatModal) {
+      const fetchUsersData = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+          
+          // Get all users from the backend using the correct endpoint
+          const response = await api.get('/friends/friendlist');
+          const users = response.data;
+          
+          if (Array.isArray(users)) {
+            setAllUsers(users);
+          } else {
+            console.error('Unexpected response format:', users);
+            setAllUsers([]);
+          }
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          setError('Failed to load users. Please check your connection.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchUsersData();
     }
-  ]);
+  }, [showNewChatModal]);
 
-  const [activeChat, setActiveChat] = useState(1);
+  // Fetch friends (chats) when component mounts
+  useEffect(() => {
+    const fetchFriendsData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get the current user from localStorage
+        const userInfo = localStorage.getItem('user_info');
+        
+        if (userInfo) {
+          const currentUser = JSON.parse(userInfo);
+          
+          try {
+            // Fetch friend list from the backend using the correct endpoint
+            const response = await api.get('/friends/friendlist');
+            const friendsData = response.data;
+            
+            if (Array.isArray(friendsData)) {
+              // Map the backend data to our Friend interface
+              const formattedFriends = friendsData.map(friend => ({
+                id: friend.uid || friend.id || '',
+                name: friend.displayName || friend.username || 'Unknown User',
+                avatar: friend.photoURL || friend.avatarSrc || '/images/default-avatar.png',
+                status: friend.status || 'offline'
+              }));
+              
+              setFriends(formattedFriends);
+            } else {
+              console.error('Unexpected response format:', friendsData);
+              setFriends([]);
+            }
+          } catch (error) {
+            console.error('API error fetching friends:', error);
+            setError('Failed to load friends. Please check your connection.');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+        setError('Failed to load friends. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchFriendsData();
+  }, []);
 
-  const handleChatSelect = (id: number) => {
-    setActiveChat(id);
+  const handleCreateChat = async (userId: string) => {
+    try {
+      setIsLoading(true);
+      
+      // Get the current user from localStorage
+      const userInfo = localStorage.getItem('user_info');
+      
+      if (userInfo) {
+        const currentUser = JSON.parse(userInfo);
+        
+        // Create a private chat with the selected user
+        await createPrivateChat(currentUser.uid, userId);
+        
+        // Close the modal and refresh the friends list
+        setShowNewChatModal(false);
+        const fetchFriendsData = async () => {
+          try {
+            setIsLoading(true);
+            setError(null);
+            
+            // Get the current user from localStorage
+            const userInfo = localStorage.getItem('user_info');
+            
+            if (userInfo) {
+              const currentUser = JSON.parse(userInfo);
+              
+              try {
+                // Fetch friend list from the backend using the correct endpoint
+                const response = await api.get('/friends/friendlist');
+                const friendsData = response.data;
+                
+                if (Array.isArray(friendsData)) {
+                  // Map the backend data to our Friend interface
+                  const formattedFriends = friendsData.map(friend => ({
+                    id: friend.uid || friend.id || '',
+                    name: friend.displayName || friend.username || 'Unknown User',
+                    avatar: friend.photoURL || friend.avatarSrc || '/images/default-avatar.png',
+                    status: friend.status || 'offline'
+                  }));
+                  
+                  setFriends(formattedFriends);
+                } else {
+                  console.error('Unexpected response format:', friendsData);
+                  setFriends([]);
+                }
+              } catch (apiError) {
+                console.error('API error fetching friends:', apiError);
+                setError('Failed to load friends. Please check your connection.');
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching friends:', error);
+            setError('Failed to load friends. Please try again later.');
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        
+        fetchFriendsData();
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      setError('Failed to create chat. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleAddNewChat = () => {
-    setShowNewChatModal(true);
+  const filteredUsers = allUsers.filter(user => {
+    const userInfo = localStorage.getItem('user_info');
+    const currentUser = userInfo ? JSON.parse(userInfo) : null;
+    
+    // Filter out the current user and search by name
+    return (
+      (!currentUser || user.uid !== currentUser.uid) &&
+      ((user.displayName?.toLowerCase().includes(searchQuery.toLowerCase())) || 
+       (user.email?.toLowerCase().includes(searchQuery.toLowerCase())))
+    );
+  });
+
+  const handleChatSelect = (id: string) => {
+    setActiveChat(id);
+    // This would typically trigger a callback to the parent component
   };
 
   const handleCloseModal = () => {
@@ -78,164 +197,167 @@ const FriendList = () => {
     setSearchQuery(e.target.value);
   };
 
-  const filteredUsers = allUsers.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Mock implementation of createPrivateChat
-  const mockCreatePrivateChat = async (currentUserId: string, friendId: string) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Return mock chat data
-    return {
-      id: `chat-${Date.now()}`,
-      participants: [currentUserId, friendId],
-      type: 'private',
-      createdAt: new Date()
-    };
-  };
-
   const handleStartChat = async (userId: string) => {
     try {
       setIsLoading(true);
-      // Get current user ID (in a real app, this would come from auth context)
-      const currentUserId = '3p4Hx4MlhPZ4EHdYaQ3tQ5mLANt2';
       
-      // Call the mock API to create a private chat
-      const newChat = await mockCreatePrivateChat(currentUserId, userId);
+      // Get the current user ID from localStorage
+      const userInfo = localStorage.getItem('user_info');
+      if (!userInfo) {
+        throw new Error('User not authenticated');
+      }
       
-      // In a real app, you would update the friends list with the new chat
-      // For now, we'll just add a mock entry
-      const newFriend = {
-        id: friends.length + 1,
-        name: allUsers.find(user => user.id === userId)?.name || 'New Friend',
-        message: 'New conversation started',
-        time: 'Just now',
-        avatar: allUsers.find(user => user.id === userId)?.avatar || '/profile-placeholder.jpg',
-        unread: 0
-      };
+      const currentUser = JSON.parse(userInfo);
+      const currentUserId = currentUser.uid;
       
-      setFriends([newFriend, ...friends]);
-      setActiveChat(newFriend.id);
+      // Create a private chat with the selected user
+      const newChat = await createPrivateChat(currentUserId, userId);
+      
+      // Find the user details to display in the chat list
+      const chatUser = allUsers.find(user => user.uid === userId);
+      
+      // Add the new chat to the friends list
+      if (chatUser) {
+        const newFriend: Friend = {
+          id: newChat.id || `chat-${Date.now()}`,
+          name: chatUser.displayName || '',
+          message: 'New conversation started',
+          time: 'Just now',
+          avatar: chatUser.photoURL || '',
+          unread: 0
+        };
+        
+        setFriends(prev => [...prev, newFriend]);
+      }
+      
       handleCloseModal();
-      
-      // Show success message
-      alert('New chat created successfully!');
     } catch (error) {
-      console.error('Error creating new chat:', error);
-      alert('Failed to create new chat. Please try again.');
+      console.error('Error starting chat:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="h-full flex flex-col bg-white text-black relative">
-      {/* User profile section */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-black overflow-hidden">
-            <span>TC</span>
-          </div>
-          <span className="ml-3 font-medium text-black">My Account</span>
-        </div>
-      </div>
-      
-      {/* Friend list header */}
+    <div className="bg-white shadow-md h-full flex flex-col">
+      {/* Friend List Header */}
       <div className="px-4 py-3 border-b border-gray-200">
         <div className="flex justify-between items-center">
           <h2 className="font-semibold text-lg text-black">Friend List</h2>
-          <span className="text-sm text-gray-500">{friends.reduce((acc, friend) => acc + friend.unread, 0)} Messages</span>
+          <span className="text-sm text-gray-500">{friends.reduce((acc, friend) => acc + (friend.unread || 0), 0)} Messages</span>
         </div>
       </div>
       
-      {/* Friend list content */}
+      {/* Search Bar */}
+      <div className="px-4 py-2 border-b border-gray-200">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search friends..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      {/* Friend List */}
       <div className="flex-1 overflow-y-auto">
-        <div className="divide-y divide-gray-100">
-          {friends.map((friend) => (
-            <div 
-              key={friend.id} 
-              onClick={() => handleChatSelect(friend.id)}
-              className={`cursor-pointer ${activeChat === friend.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        ) : friends.length > 0 ? (
+          <ul className="divide-y divide-gray-200">
+            {friends.map((friend) => (
+              <FriendItem
+                key={friend.id}
+                friend={friend}
+                isActive={activeChat === friend.id}
+                onClick={() => handleChatSelect(friend.id)}
+              />
+            ))}
+          </ul>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 p-4">
+            <p>No friends yet</p>
+            <button 
+              onClick={() => setShowNewChatModal(true)}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
-              <FriendItem friend={friend} />
-            </div>
-          ))}
-        </div>
+              Add Friends
+            </button>
+          </div>
+        )}
       </div>
       
-      {/* Add new chat button */}
+      {/* New Chat Button */}
       <div className="p-4 border-t border-gray-200">
         <button 
-          onClick={handleAddNewChat}
-          className="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors duration-200 flex items-center justify-center"
+          onClick={() => setShowNewChatModal(true)}
+          className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
           </svg>
           New Chat
         </button>
       </div>
-
+      
       {/* New Chat Modal */}
       {showNewChatModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Start a New Chat</h3>
-              <button 
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-500 focus:outline-none"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <h3 className="font-semibold text-lg text-black">Start a New Chat</h3>
+              <button onClick={handleCloseModal} className="text-gray-500 hover:text-gray-100">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
               </button>
             </div>
-            
             <div className="p-4">
-              <div className="mb-4">
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Search for a friend</label>
-                <input
-                  type="text"
-                  id="search"
-                  placeholder="Type a name..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-black"
+              />
               <div className="max-h-60 overflow-y-auto">
-                {filteredUsers.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No users found</p>
+                {isLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  </div>
                 ) : (
                   <ul className="divide-y divide-gray-200">
                     {filteredUsers.map(user => (
-                      <li key={user.id} className="py-3">
+                      <li key={user.uid} className="py-3">
                         <button 
-                          onClick={() => handleStartChat(user.id)}
+                          onClick={() => handleCreateChat(user.uid || '')}
                           className="w-full flex items-center hover:bg-gray-50 p-2 rounded-md"
                           disabled={isLoading}
                         >
-                          <div className="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0 overflow-hidden">
-                            {user.avatar ? (
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0 text-black">
+                            {user.photoURL ? (
                               <Image 
-                                src={user.avatar} 
-                                alt={user.name} 
+                                src={user.photoURL} 
+                                alt={user.displayName || ''} 
                                 width={40} 
                                 height={40} 
                                 className="object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                {user.name.charAt(0)}
+                                {(user.displayName || '').charAt(0)}
                               </div>
                             )}
                           </div>
                           <div className="ml-3 text-left">
-                            <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                            <p className="text-sm font-medium text-gray-100">{user.displayName}</p>
                           </div>
                         </button>
                       </li>
@@ -244,29 +366,11 @@ const FriendList = () => {
                 )}
               </div>
             </div>
-            
-            <div className="p-4 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={handleCloseModal}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 mr-2"
-              >
-                Cancel
-              </button>
-              {isLoading && (
-                <div className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating...
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
     </div>
   );
-};
+}
 
 export default FriendList;

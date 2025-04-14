@@ -1,17 +1,45 @@
 // components/MessageInput.tsx
 import React, { useState, FormEvent } from 'react';
+import { sendMessage } from '../services/chatService';
 
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
+  chatId: string;
+  currentUserId: string;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, chatId, currentUserId }) => {
   const [newMessage, setNewMessage] = useState<string>('');
+  const [isSending, setIsSending] = useState<boolean>(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    onSendMessage(newMessage);
-    setNewMessage('');
+    
+    if (!newMessage.trim() || !chatId || !currentUserId) return;
+    
+    try {
+      setIsSending(true);
+      
+      // Send message using the chat service
+      const sentMessage = await sendMessage({
+        chatId,
+        content: newMessage,
+        senderId: currentUserId,
+        type: 'text'
+      });
+      
+      console.log('Message sent successfully:', sentMessage);
+      
+      // Call the parent component's onSendMessage callback
+      onSendMessage(newMessage);
+      
+      // Clear the input field
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -33,10 +61,15 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage }) => {
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Enter message"
           className="flex-1 mx-3 py-2 px-4 bg-gray-200 rounded-full focus:outline-none text-black"
+          disabled={isSending}
         />
-        <button type="submit" className="p-2 bg-gray-800 rounded-full text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        <button 
+          type="submit" 
+          className={`p-2 rounded-full ${isSending ? 'text-gray-400' : 'text-blue-500 hover:text-blue-600'}`}
+          disabled={isSending || !newMessage.trim()}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
           </svg>
         </button>
       </form>

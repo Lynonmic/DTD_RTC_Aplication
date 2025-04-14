@@ -55,8 +55,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <Image 
             src={avatarSrc}
             alt="User Avatar"
-            layout="fill"
+            width={40}
+            height={40}
             className="object-cover"
+            style={{ width: '100%', height: '100%' }}
           />
           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
         </div>
