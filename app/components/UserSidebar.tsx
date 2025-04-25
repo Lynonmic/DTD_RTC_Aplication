@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import SidebarProfile from './SidebarProfile';
 import SearchBar from './SearchBar';
 import MenuOptions from './MenuOptions';
+import userDefaultImage from '../assets/user.png';
 
 const UserSidebar: React.FC = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const UserSidebar: React.FC = () => {
           const parsedUserInfo = JSON.parse(userInfo);
           setUserData({
             name: parsedUserInfo.displayName || 'User',
-            avatarSrc: parsedUserInfo.photoURL || 'https://res.cloudinary.com/dhatjk5lm/image/upload/v1744169461/profile-placeholder.jpg',
+            avatarSrc: parsedUserInfo.photoURL || userDefaultImage.src,
             uid: parsedUserInfo.uid
           });
         }
@@ -90,7 +91,8 @@ const UserSidebar: React.FC = () => {
   ];
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 border-l border-gray-200 shadow-sm">
+    <div className={"h-full flex flex-col bg-gray-50 border-l border-gray-200 shadow-sm"}
+>
       {/* Profile section */}
       <SidebarProfile name={userData.name} avatarSrc={userData.avatarSrc} />
       
@@ -104,10 +106,7 @@ const UserSidebar: React.FC = () => {
         <MenuOptions customItems={customMenuItems} />
       </div>
       
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 text-center">
-        <p className="mt-2 text-xs text-gray-500"> 2025 DTD Chat</p>
-      </div>
+     
     </div>
   );
 };

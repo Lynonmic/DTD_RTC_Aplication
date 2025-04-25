@@ -3,6 +3,15 @@ export interface Message {
   text: string;
   sender: string;
   timestamp?: Date;
+  type?: string; // 'text', 'image', 'video-call', etc.
+  status?: 'active' | 'ended'; // Status for video calls
+  roomUrl?: string; // Đường dẫn trực tiếp đến phòng gọi video
+  videoCallData?: {
+    roomUrl: string;
+    messageId: string;
+    chatId: string;
+  };
+  fileURL?: string;
 }
 
 export interface User {
@@ -43,6 +52,12 @@ export interface ChatMessage {
   senderId: string;
   timestamp: any; // Firebase timestamp or Date
   type: string;
+  status?: 'active' | 'ended'; // Status for video calls
+  videoCallData?: {
+    roomUrl: string;
+    messageId: string;
+    chatId: string;
+  };
   fileURL?: string;
   readBy?: string[];
   read?: boolean;

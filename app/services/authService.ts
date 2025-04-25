@@ -53,38 +53,19 @@ export const login = async (email: string, password: string): Promise<User> => {
     }
 };
 
-export const register = async (email: string, password: string, displayName: string): Promise<User> => {
+export const register = async (email: string, password: string, displayName: string) => {
     try {
-        // Register with Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-        // Update profile with display name
-        if (auth.currentUser) {
-            await updateProfile(auth.currentUser, { displayName });
-        }
-
-        // Register with backend
-        const response = await api.post('/auth/register', {
+        // Register through your backend without capturing the response
+        await api.post('/auth/register', {
             email,
             password,
-            displayName,
-            photoURL: auth.currentUser?.photoURL || ''
+            displayName
         });
-
-        // Store the tokens from backend response in localStorage if available
-        if (response.data && response.data.idToken) {
-            localStorage.setItem('authToken', response.data.idToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken || '');
-            localStorage.setItem('tokenExpiry', (Date.now() + (parseInt(response.data.expiresIn) * 1000)).toString());
-        } else {
-            // Fallback to Firebase client token if backend doesn't return one
-            const idToken = await userCredential.user.getIdToken();
-            localStorage.setItem('authToken', idToken);
-        }
         
+        // After successful backend registration, sign in with Firebase client
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
         return userCredential.user;
     } catch (error) {
-        console.error('Registration error:', error);
         throw error;
     }
 };

@@ -68,10 +68,14 @@ const VideoCall: React.FC<VideoCallProps> = ({
 
     try {
       // Create a video call room in the backend
-      const callRoom = await createVideoCallRoom({
-        chatId: chatId,
-        senderId: userId
-      });
+      // Make sure we're passing the correct data format as expected by the API
+      const callData = {
+        chatId: chatId, // Ensure this is a string
+        senderId: userId // Ensure this is a string
+      };
+      console.log('Sending video call data:', JSON.stringify(callData));
+      
+      const callRoom = await createVideoCallRoom(callData);
       
       console.log('Video call room created:', callRoom);
       

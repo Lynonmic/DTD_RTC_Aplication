@@ -41,11 +41,19 @@ export const getAllChats = async (uid: string): Promise<Chat[]> => {
 // Get messages for a specific chat
 export const getChatMessages = async (
   chatId: string, 
-  limit: number = 10,
+  limit: number = 50, // Increased default limit to 50 messages
   lastMessageId?: string
 ): Promise<ChatMessage[]> => {
   try {
-    const response = await api.get(`/chats/messages/${chatId}/${limit}`);
+    // Build the API endpoint URL
+    let endpoint = `/chats/messages/${chatId}/${limit}`;
+    
+    // Add lastMessageId for pagination if provided
+    if (lastMessageId) {
+      endpoint += `?lastMessageId=${lastMessageId}`;
+    }
+    
+    const response = await api.get(endpoint);
     return [...response.data].reverse();
   } catch (error) {
     console.error('Error getting messages:', error);
@@ -56,7 +64,12 @@ export const getChatMessages = async (
 // Create a new private chat
 export const createPrivateChat = async (uid: string, friendId: string): Promise<Chat> => {
   try {
-    const response = await api.post('/chats/private', { uid, friendId });
+    const response = await api.post('/chats/private', { uid, friendId }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error creating private chat:', error);
@@ -75,10 +88,19 @@ export const createGroupChat = async (chatData: any): Promise<Chat> => {
   }
 };
 
-// Send a new message
+// Send a message to a chat
 export const sendMessage = async (messageData: any): Promise<ChatMessage> => {
   try {
+    // Log the message data before sending
+    console.log('Sending message with data:', messageData);
+    
+    // Make sure videoCallData is properly included for video call messages
+    if (messageData.type === 'video-call' && messageData.videoCallData) {
+      console.log('Sending video call message with room URL:', messageData.videoCallData.roomUrl);
+    }
+    
     const response = await api.post('/chats/send', messageData);
+    console.log('Message sent successfully:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error sending message:', error);
@@ -86,16 +108,16 @@ export const sendMessage = async (messageData: any): Promise<ChatMessage> => {
   }
 };
 
-// Mark messages as read
-export const markMessagesAsRead = async (chatId: string, userId: string): Promise<any> => {
-  try {
-    const response = await api.put(`/chats/read/${chatId}/${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error marking messages as read:', error);
-    throw error;
-  }
-};
+// // Mark messages as read
+// export const markMessagesAsRead = async (chatId: string, userId: string): Promise<any> => {
+//   try {
+//     const response = await api.put(`/chats/read/${chatId}/${userId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Error marking messages as read:', error);
+//     throw error;
+//   }
+// };
 
 // Get all users (for creating new chats)
 export const getAllUsers = async (): Promise<any[]> => {

@@ -2,7 +2,8 @@ import axios from 'axios';
 import { auth } from '../config/firebase';
 
 // Use the production API URL with the /v1 prefix included
-const API_BASE_URL = 'https://xdpmweb.onrender.com/v1';
+ const API_BASE_URL = 'https://xdpmweb.onrender.com/v1';
+// const API_BASE_URL = 'https://testing-64cp.onrender.com/v1';
 
 console.log('API Base URL:', API_BASE_URL); // Log the API URL for debugging
 

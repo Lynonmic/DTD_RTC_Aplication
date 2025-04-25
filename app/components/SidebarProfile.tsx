@@ -30,7 +30,8 @@ const SidebarProfile: React.FC<SidebarProfileProps> = ({ name, avatarSrc }) => {
   };
 
   return (
-    <div className="p-4 flex flex-col items-center bg-white border-b border-gray-200">
+    <div className="p-4 flex flex-col items-center bg-white border-b border-gray-200"
+>
       <div className="relative w-20 h-20 rounded-full overflow-hidden mb-3 shadow-md">
         {avatarSrc ? (
           <Image 
